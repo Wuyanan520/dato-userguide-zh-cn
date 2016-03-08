@@ -1,18 +1,15 @@
-# Working with Tabular Data
+# 处理表格数据
 
-It's quite common that when you first get your hands on a dataset, it will be
-in a format that resembles a table. Tables are a straightforward format to use
-when cleaning data in preparation for more complicated data analysis, and the
-[SFrame](https://dato.com/products/create/docs/generated/graphlab.SFrame.html)
-is the tabular data structure included with GraphLab Create. The SFrame is
-designed to scale to datasets much larger than will fit in memory.
+通常情况下，你第一次接触一个数据集的时候，它的格式类似一张表。在为更复杂的数据分析而清洗数据时，
+表是一种很简洁明了的格式。[SFrame](https://dato.com/products/create/docs/generated/graphlab.SFrame.html)
+是GraphLab Create中的表格数据结构。SFrame的目的是扩展到远超内存容量的数据集。
 
-We will introduce the basics of the SFrame in the following chapters:
+我们将在下面的章节介绍SFrame的基本内容：
 
-* [Loading and Saving](sframe-intro.md) focuses on creating an SFrame from existing data in CSV format and how to persist an SFrame.
+* [加载和保存](sframe-intro.md) 主要讲述从已有的CSV格式数据创建SFrame及如何持久化SFrame（将SFrame保存到文件）。
 
-* The Frame supports a large number of common data manipulation operations and we will review a number of common ones in the chapter [Data Manipulation](data-manipulation.md).
+* SFrame支持大量通用的数据处理操作，我们将在[数据处理](data-manipulation.md)一章回顾大量通用数据处理操作。
 
-* [Apache Spark RDDs](../data_formats_and_sources/spark_integration.md) goes into more detail about getting data in and out of Apache Spark RDDs.
+* [Apache Spark RDDs](../data_formats_and_sources/spark_integration.md) 详细描述与Apache Spark RDD的相互转换。
 
-* The chapter about [SQL databases](../data_formats_and_sources/sql_integration.md) explains how to interface with relational data sources through Python DBAPI2 or ODBC.
+* [SQL数据库](../data_formats_and_sources/sql_integration.md)一章解释如何通过Python DBAPI2或ODBC与关系型数据库交互。

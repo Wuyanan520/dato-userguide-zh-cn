@@ -1,8 +1,9 @@
-#Working with Data 
-Data science often requires manipulating data so that it is ready for analysis. This section describes how  to
+# 数据处理
 
-- import data 
-- reshape unstructured data
-- make transformations of existing data quickly 
-- compute summary statistics
-- easily visualize your data 
+数据科学经常需要对数据进行处理后才可进行分析。本节介绍如何：
+
+- 导入数据
+- 重塑非结构化数据
+- 快速对现有数据进行变换
+- 计算摘要统计量
+- 简单地可视化你的数据

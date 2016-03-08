@@ -1,21 +1,16 @@
-# Basic Loading and Saving
+# 基本的加载和保存操作
 
-SFrames can import data in a [variety of formats](../data_formats_and_sources/intro.md),
-and we're always working on supporting more.  A very common data format is the
-comma separated value (csv) file, which is what we'll use for these examples.
-We will use some data from the [Million Song
-Dataset](http://labrosa.ee.columbia.edu/millionsong/) to aid our SFrame-related
-examples.  This first table contains metadata about each song in the database.
-Here's how to load it into an SFrame:
+SFrame可以从[多种格式](../data_formats_and_sources/intro.md)加载数据，我们也在努力让SFrame支持更多格式。
+很常见的一种数据格式是csv（逗号分隔值）文件，我们将在后面的示例中使用这种格式。
+我们将在SFrame相关的示例中使用来自[Million Song Dataset](http://labrosa.ee.columbia.edu/millionsong/)的数据集。
+第一张表包含数据库中各歌曲的元信息。下面展示如何将该数据集加载进一个SFrame：
 
 ```python
 songs = gl.SFrame.read_csv("http://s3.amazonaws.com/dato-datasets/millionsong/song_data.csv")
 ```
 
-Simple.  No options are needed for the simplest case, as the SFrame parser
-infers column types. Of course, there are many options you may need to specify
-when importing a csv file.  Some of the more common options come in to play when
-we load the usage data of users listening to these songs online:
+简单吧！最简单的情况下不需要指定任何选项参数，因为SFrame的解析器会推断列数据类型。当然，在加载csv数据的时候
+有很多选项参数可以指定。当加载用户在线收听这些歌曲的使用信息数据时，一些更常用的选项参数会有用：
 
 ```python
 usage_data = gl.SFrame.read_csv("http://s3.amazonaws.com/dato-datasets/millionsong/10000.txt",
@@ -24,14 +19,11 @@ usage_data = gl.SFrame.read_csv("http://s3.amazonaws.com/dato-datasets/millionso
                                 column_type_hints={'X3':int})
 ```
 
-The `header` and `delimiter` options are needed because this particular csv
-file does not provide column names in its first line, and the values are
-separated by tabs, not commas.  The `column_type_hints` keeps the SFrame csv
-parser from attempting to infer the datatype of each column, which it does by
-default.  For a full list of options when parsing csv files, check our [API
-Reference](https://dato.com/products/create/docs/generated/graphlab.SFrame.read_csv.html#graphlab.SFrame.read_csv).
+需要加上`header`和`delimiter`参数是因为这个csv文件没有在第一行提供列名，并且各值之间使用tab分割而不是逗号。
+`column_type_hints`参数指定列类型而不用SFrame csv parser默认推断的列类型。要了解解析csv文件时的完整参数列表，请访问
+[APIReference](https://dato.com/products/create/docs/generated/graphlab.SFrame.read_csv.html#graphlab.SFrame.read_csv).
 
-Once done we can inspect the first few rows of the tables we've imported.
+导入完成之后我们就可以查看表的前面几行数据。
 
 ```python
 songs
@@ -114,30 +106,30 @@ Note: Only the head of the SFrame is printed.
 You can use print_rows(num_rows=m, num_columns=n) to print more rows and columns.
 ```
 
-Here we might want to rename columns from the default names:
+我们可以重命名默认列名：
 
 ```python
 usage_data.rename({'X1':'user_id', 'X2':'song_id', 'X3':'listen_count'})
 ```
 
 
-SFrames can be saved as a csv file or in the SFrame binary format.  If your
-SFrame is saved in binary format loading it is instantaneous, so we won't ever
-have to parse that file again.  Here, the default is to save in binary format,
-and we supply the name of a directory to be created which will hold the binary
-files:
+SFrames可以以csv文件形式或SFrame二进制格式保存。若以二进制格式保存，加载是即时的，
+因为不需要再去解析该文件了。默认是以二进制格式保存，我们只需提供保存二进制文件的
+文件夹名即可。
 
 ```python
 usage_data.save('./music_usage_data')
 ```
 
-Loading is then very fast:
+随后加载将非常快速：
 
 ```python
 same_usage_data = gl.load_sframe('./music_usage_data')
 ```
 
-In addition to these functions, JSON imports and exports, SQL/ODBC imports, and various Spark RDD conversion capabilities are also supported. For further information see the respective pages in the GraphLab Create API Documentation:
+除了这些函数之外，SFrame还支持JSON导入和导出、SQL/ODBC导入及Spark RDD转换这些功能。
+想要了解更多信息，请查看GraphLab Create API文档相关页面：
+
 * [read_json](https://dato.com/products/create/docs/generated/graphlab.SFrame.read_json.html)
 * [export_json](https://dato.com/products/create/docs/generated/graphlab.SFrame.export_json.html)
 * [read_csv](https://dato.com/products/create/docs/generated/graphlab.SFrame.read_csv.html)
@@ -148,13 +140,13 @@ In addition to these functions, JSON imports and exports, SQL/ODBC imports, and 
 * [to_rdd](https://dato.com/products/create/docs/generated/graphlab.SFrame.to_rdd.html)
 * [to_spark_dataframe](https://dato.com/products/create/docs/generated/graphlab.SFrame.to_spark_dataframe.html)
 
-For interfacing with Spark RDDs and relational databases see also the specific subsections in this user guide:
+与Spark RDD和关系数据库相关的交互信息也可以查看本指南的相关章节：
 * [Spark RDDs](../data_formats_and_sources/spark_integration.md)
-* [SQL Databases](../data_formats_and_sources/sql_integration.md)
+* [SQL数据库](../data_formats_and_sources/sql_integration.md)
 
 
 
-#### Data Types
+#### 数据类型
 
 An SFrame is made up of columns of a contiguous type. For instance the `songs`
 SFrame is made up of 5 columns of the following types
@@ -167,14 +159,13 @@ SFrame is made up of 5 columns of the following types
 	year	int
 ```
 
-In this SFrame we see only string (`str`) and integer (`int`) columns, but a
-number of datatypes are supported:
+在这个SFrame中只出现了字符串(`str`)和整数(`int`)类型的列，但是SFrame还支持许多数据类型：
 
-* `int` (signed 64-bit integer)
-* `float` (double-precision floating point)
-* `str` (string)
-* `array.array` (1-D array of doubles)
-* `list` (arbitrarily list of elements)
-* `dict` (arbitrary dictionary of elements)
-* `datetime.datetime` (datetime with microsecond precision)
-* `image` (image)
+* `int` (有符号64位整型)
+* `float` (双精度浮点型)
+* `str` (字符串)
+* `array.array` (双精度一维数组)
+* `list` (列表)
+* `dict` (字典)
+* `datetime.datetime` (精确到微秒的时间日期型)
+* `image` (图片)
