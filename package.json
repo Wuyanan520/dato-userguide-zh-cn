@@ -1,0 +1,23 @@
+{
+  "name": "userguide",
+  "version": "1.8.2",
+  "description": "userguide",
+  "main": "index.js",
+  "devDependencies": {
+    "gitbook-cli": "1.0.1",
+    "gitbook-plugin-mathjax": "1.0.0"
+  },
+  "scripts": {
+    "gitbook-dep": "./node_modules/.bin/gitbook install ./",
+    "build": "./node_modules/.bin/gitbook build",
+    "gitbook": "./node_modules/.bin/gitbook build",
+    "serve": "./node_modules/.bin/gitbook serve"
+  },
+  "author": "Dato, Inc.",
+  "license": "BSD-3-Clause",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/dato-code/userguide.git"
+  },
+  "private": true
+}
