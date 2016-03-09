@@ -1,21 +1,16 @@
-# Data Manipulation
+# 数据处理
 
-It isn't often that your dataset is "clean" enough to run one of our toolkits on
-it in a meaningful way right after import.  Such is life...data is messy.
-SFrames enable you to complete data cleaning tasks in a scalable way, even on
-datasets that are much larger than your computer's memory.  
+数据一导入就足够清洁到可以用我们的工具包在上面执行有意义操作这种情况并不常见。
+这就是文件...数据就是杂乱的。SFrames可以让你以可伸缩的方式完成数据清洗任务，
+即使是在比计算机内存还大的数据集上。
 
 
-#### Column Selection and Manipulation
-A problem you may
-have noticed in the song metadata is that some songs' year value is 0.
-Suppose we want to change those to a missing value, so that they do not skew a
-summary statistic over the column (e.g. `mean` or `min`). If we knew about this
-before parsing, or are willing to parse the file again, we could add 0 to the
-`na_values` option of `read_csv`. Alternatively, we can apply an arbitrary
-function to one or multiple columns of an
-SFrame.  Here's how to replace those zeroes with missing values with a Python
-lambda function:
+#### 列选择和处理
+
+你可能已经注意到在song metadata中存在某些song的year值为0的问题。假设我们想要将这些值
+改成缺失值，以便他们不会使该列上的统计量偏斜（如`mean`或`min`）。如果我们在解析数据之前
+已经知道或者我们愿意再次解析文件，我们可以将`read_csv`的参数`na_values`设置为0。或者，
+我们还可以在SFrame的一列或多列上应用一个函数。下面使用Python的lambda函数将零值替换为缺失值。
 
 ```python
 songs['year'] = songs['year'].apply(lambda x: None if x == 0 else x)
@@ -43,20 +38,15 @@ songs.head(5)
 [5 rows x 5 columns]
 ```
 
-Notice we had to reassign the resulting column back to our SFrame.  This is
-because the content of the SFrame's columns (a separate data structure called
-an [SArray](https://dato.com/products/create/docs/generated/graphlab.SArray.html),
-is immutable.  SFrames can add and subtract columns liberally though, as it
-essentially is just a carrier of references to SArrays.
+注意我们需要将结果再赋值给我们的SFrame，因为SFrame列的内容（其实是一个叫做[SArray](https://dato.com/products/create/docs/generated/graphlab.SArray.html)
+的数据结构）是不可变的。SFrames可自由增减列是因为其列本质上是SArrays的引用。
 
-We used a lambda function here because it is the simplest way to instantiate a
-small function like that.  The `apply` method will take a named function (a normal Python
-function that starts with `def`) as well.  As long as the function takes one
-parameter and returns one value, it can be applied to a column.
+这里我们使用lambda函数是因为这是实例化小函数最简单的方法。`apply`方法也可以
+以命名函数（即以`def`开头的普通Python函数）为参数。只要函数有一个参数并且返
+回一个值，就可以将其应用到一列上去。
 
-We can also apply a function to multiple columns.  Suppose we want
-to add a column of the number of times the word 'love' is used in the `title`
-and `artist` column:
+我们也可以将函数应用到多列上去。假如我们需要添加一列来记录'love'在'title'列和
+'artist'列出现次数之和：
 
 ```python
 songs['love_count'] = songs[['title', 'artist_name']].apply(
@@ -87,15 +77,11 @@ songs.topk('love_count', k=5)
 [5 rows x 6 columns]
 ```
 
-A few things to note here.  We first select a subset of columns
-using a list within square brackets.  This is useful in general, but it helps us
-with performance in this case, as fewer values are scanned.  Also, when apply is
-called on an SFrame instead of an SArray as shown here, the input of the lambda
-function is a dictionary where the keys are the column names, and the values
-correspond to that row's values.
+这里还需要注意的是：首先我们在方括号中使用列表选择了一个列子集。这通常都是有用的，
+因为在这种情况下我们可以通过减少需要扫描值的数量来提高性能。当在SFrame上而不是SArray上
+调用apply方法时，lambda函数的输入时一个字典，键是列名，值是行对应各列的值。
 
-Another very useful and common operation is the ability to select columns based on types.
-For instance, this extracts all the columns containing strings.
+另外一个有用切常用的操作是根据类型来选择列。例如，下面代码抽取所有包含字符串的列。
 
 ```python
 song[str]
@@ -137,6 +123,9 @@ Now, you may not feel comfortable transforming a column without inspecting more
 than the first 10 rows of it, as we did with the `year` column. To quickly get
 a summary of the column, we can do:
 
+就像我们在`year`列上的变换操作一样，现在你可能会对不检查前10行之外的数据就对一列执行变换操作感觉不放心。
+我们可以通过如下方式快速获取一列的概要信息：
+
 ```python
 songs['year'].sketch_summary()
 ```
@@ -177,21 +166,14 @@ Quantiles:
 
 ```
 
+看来除了0之外没有其他不合法的年份值了。概要信息将值分成了"exact"（准确）和"approximate"（近似）两类。
+近似值当然也有可能作为准确值返回，但是对于概要信息，我们使用近似值来确保对于大型数据集的探索是可扩展的（？）。
+我们使用的方法仅对指定列的数据进行一遍扫描，并且每一个操作都有严格定义的范围指明结果会在多大程度上是有误的。
+具体参见[API Reference](https://dato.com/products/create/docs/generated/graphlab.Sketch.html)。
 
-It appears that there are no other bogus years than 0.  This summary splits
-its values into "exact" and "approximate".  The approximate values could
-certainly be returned as exact values, but for the summary we use approximate
-values to make sure exploring large datasets is scalable.  The methods we use
-only do a single pass of the data in the column, and each operation has well-
-defined bounds on how wrong the answer will be, which are listed in our
-[API Reference](https://dato.com/products/create/docs/generated/graphlab.Sketch.html).
-
-Using the most frequent items and quantiles described here, you can probably
-almost picture the distribution of years, where the tallest part is squarely
-within the 2000s.  Fortunately, we don't have to just picture it in our heads.
-GraphLab Canvas provides visualizations of SFrames, as well as other data structures.
-GraphLab Canvas is covered in depth in the [Visualization](visualization.md)
-section. To view a histogram of these approximate quantiles, we run:
+使用概要信息中最常出现的项及分位数信息，你几乎可以想象出年份的分布情况，其中最大一部分是20世纪前十年（？）。
+幸运的是我们可以不仅仅是在头脑中数据分布，GraphLab Canvas提供了SFrame及其他数据结构之上的可视化，
+在[可视化](visualization.md)一节将深入介绍GraphLab Canvas。下面的例子将这些近似分位数以直方图的形式可视化：
 
 ```
 songs['year'].show()
@@ -200,10 +182,8 @@ songs['year'].show()
 [<img alt="Histogram of Release Years" src="images/sframe_user_guide_1_histogram.png" style="max-width: 70%; margin-left: 15%;" />](images/sframe_user_guide_1_histogram.png)
 
 
-We have done some exploration, transformation, and feature generation.  Let's
-spend some time filtering values we won't care about later.  For example,
-perhaps we'll need an SFrame with **only** dated songs.  This basic filter operation
-looks like this:
+我们已经了一些探索，转换和特征生成，让我们继续花些时间过滤我们后面用不到的值吧。例如，
+我们可能只需要有确切日期的歌曲，基本的过滤操作如下：
 
 ```python
 dated_songs = songs[songs['year'] != None]
@@ -244,12 +224,9 @@ Note: Only the head of the SFrame is printed. This SFrame is lazily evaluated.
 You can use len(sf) to force materialization.
 ```
 
-The output does a good job at explaining what is happening here.  SFrames will
-not do any work if it isn't required right away.  This way, if you decide this
-filter operation isn't for you after looking at the first few rows, GraphLab
-Create won't waste computation time doing it anyways.  However, it
-is important to verify that the missing values were indeed removed, and that we
-indeed removed 484424 rows, so we'll force materialization of the new SFrame.
+输出信息很好的解释了过滤操作过程中发生了什么。对不需立即使用的结果SFrames会暂不执行操作，
+这种情况下，如果你看了前几行的结果发现过滤操作不需要再执行了，GraphLab就不会浪费计算时间，
+但是验证缺失值的确被移除了很重要。我们确实移除了484424行，所以我们强制新的SFrame具体化（即全部执行？）。
 
 ```python
 len(dated_songs)
@@ -259,18 +236,12 @@ len(dated_songs)
 515576
 ```
 
-Why does this filtering syntax work?  What we're actually doing is placing an
-SArray in the square brackets.  A comparison operator applied to an SArray
-returns a new SArray of the same length as the original, but with values that
-correspond to `true` or `false` based on the operator.  Here's what it looks
-like:
-
+为什么这个过滤语法会起效？我们实际上是在方括号中放置了一个SArray，应用于SArray上的
+比较操作符返回一个等长的bool型SArray。如下所示：
 
 ```python
 songs['year'] != None
 ```
-
-
 
 ```
 dtype: int
@@ -278,29 +249,21 @@ Rows: 1000000
 [1, 1, 1, 1, 0, 0, 0, 1, 0, 0, 1, 1, 0, 1, 0, 1, 1, 1, 1, 0, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 0, 0, 0, 1, 1, 1, 0, 1, 0, 1, 0, 1, 0, 1, 1, 1, 0, 1, 0, 0, 0, 0, 1, 1, 1, 0, 0, 1, 0, 0, 1, 1, 0, 1, 1, 1, 0, 0, 0, 1, 0, 0, 1, 0, 1, 1, 0, 0, 0, 0, 1, 0, 0, 1, 1, 0, 1, 0, 1, 0, 0, 0, 1, 1, 1, 1, 0, 1, 1, 1, ... ]
 ```
 
-
-We may want to use more than one comparison operator, for which you must place
-each comparison statement in parentheses and use the bitwise boolean logic
-operators to combine the statements, as Python does not allow the overloading of
-logical operators.  Perhaps we are building a music recommender with this data,
-and we would like to only use "reasonable" play counts, for some definition of
-reasonable:
-
+我们可能会需要使用两个以上比较操作符，这时我们需要将每一个比较语句放置在一个小括号里，
+并使用按位布尔逻辑操作符连接，因为Python不允许逻辑操作符重载。也许我们会使用这个数据
+搭建一个推荐系统，我们可能会只使用播放次数合理的数据：
 
 ```python
 reasonable_usage = usage_data[(usage_data['listen_count'] >= 10) & (usage_data['listen_count'] <= 500)]
 len(reasonable_usage)
 ```
 
-
 ```
 114026
 ```
 
-
-
-You can also write a lambda function to filter using the `filter` function,
-which you can read about in the [API Reference](https://dato.com/products/create/docs/generated/graphlab.SArray.filter.html#graphlab.SArray.filter).
+你也可以写一个lambda函数传递给`filter`函数做参数来过滤，
+具体请参考[API Reference](https://dato.com/products/create/docs/generated/graphlab.SArray.filter.html#graphlab.SArray.filter).
 
 #### Joins and Aggregation
 
