@@ -265,11 +265,10 @@ len(reasonable_usage)
 你也可以写一个lambda函数传递给`filter`函数做参数来过滤，
 具体请参考[API Reference](https://dato.com/products/create/docs/generated/graphlab.SArray.filter.html#graphlab.SArray.filter).
 
-#### Joins and Aggregation
+#### 连接和聚合
 
-Another important way to filter a dataset is to get rid of duplicate data.  A
-nice way to search for duplicate data is to visualize the SFrame using GraphLab
-Canvas.
+另一种过滤数据集的重要方法是去除重复值。一种比较棒的查看重复值得方法是使用GraphLab
+Canvas将SFrame可视化。
 
 ```
 songs.show()
@@ -277,15 +276,10 @@ songs.show()
 
 [<img alt="Summary of Song Metadata" src="images/sframe_user_guide_2_summary.png" style="max-width: 100%; margin-left: 0%;" />](images/sframe_user_guide_1_histogram.png)
 
-
-It appears our `song_id` is not completely unique.  This would make merging the
-`songs` and `usage_data` SFrames error-prone if all we want to do is add song
-title information to the existing usage data.  In this particular dataset, these
-repeat songs are included because they may have been released on several
-different albums (movie soundtracks, radio singles, etc.).  If we do not care
-about which album release is included in the dataset, we can filter those
-duplicates like this:
-
+看来`song_id`并不是完全唯一的（上图num_unique(est)）。如果我们要通过合并
+`songs`和`usage_data`在`usage_data`中加入歌名信息，`song_id`的不唯一会使合并操作出错。
+这一数据集中包含重复歌曲是因为他们可能在几个不同的专辑中发行（电影配乐和电台单曲等）。
+如果我们不关心歌曲是包含在哪个专辑中，我们可以这样来过滤掉重复值：
 
 ```python
 other_cols = songs.column_names()
@@ -294,26 +288,22 @@ agg_list = [gl.aggregate.SELECT_ONE(i) for i in other_cols]
 unique_songs = songs.groupby('song_id', dict(zip(other_cols, agg_list)))
 ```
 
-This code block needs some further explanation.  It is centered around calling
-`groupby` with the `SELECT_ONE` aggregator.  This selects a random
-representative row from each group.  You must explicitly denote which columns
-will use this aggregator, so the list comprehension gathers all other columns
-than the one we are grouping by and uses the `SELECT_ONE` aggregator for each
-one.  When used like this, `SELECT_ONE` will use the same random row for each
-column.  This is great if it is not important which of the duplicates you pick.
-If it is, another aggregator like `MIN` or `MAX` may be in order.
+我们来进一步解释上面的代码块。它主要集中在带`SELECT_ONE`聚合器的`groupby`操作上。
+它会从每一组随机选择一行。你必须显式地指明哪些列需要使用该聚合器，所以我们使用
+列表推倒来获取除用于分组（groupby）的列之外的其他所有列，并在这些列上分别使用
+`SELECT_ONE`聚合器。在这种用法下，`SELECT_ONE`在每一列上使用随机选择的同一行
+（聚合操作中出现多列上执行`SELECT_ONE`这种情况时，每一列的值都选自同一个随机行，
+而不会出现每一列随机选择的问题）。如果选择重复记录中的哪一行不重要的话，使用`SELECT_ONE`
+是很不错的，反之，可以使用如`MIN`或`MAX`等其他聚合器。
 
-Suppose we actually want to see the songs that have the highest play count?  Now
-we can correctly group each song and aggregate its listen count, and then join
-the result to the song metadata to see the song titles.
+假如我们要查看播放次数最高的歌曲呢？我们可以正确地对歌曲分组并聚合计算收听次数，然后
+将结果与歌曲的元信息连接（join）来查看歌曲的标题。
 
 ```python
 tmp = usage_data.groupby(['song_id'], {'total_listens': gl.aggregate.SUM('listen_count'),
                                        'num_unique_users': gl.aggregate.COUNT('user_id')})
 tmp.join(songs, ['song_id']).topk('total_listens')
 ```
-
-
 
 ```
 +--------------------+------------------+---------------+
@@ -361,14 +351,9 @@ tmp.join(songs, ['song_id']).topk('total_listens')
 [10 rows x 8 columns]
 ```
 
-
-
-The `usage_data` table is already in a great format for feeding to a recommender
-algorithm as it has user and song identifiers, and some form of a metric (number
-of listens) to rate how much the user liked the song.  The problem here is that
-users that listened to a song a lot would skew the recommendations.  At some
-point, once a user plays a song enough times, you know they really like it.
-Perhaps we could translate the `listen_count` into a rating instead.  Here is a simple way to do it:
+`usage_data`表已经是适合作为推荐算法输入的格式了，因为它有用户和歌曲的id以及一些度量用户对歌曲喜好程度的量（用户收听次数）了。
+这里有个问题是当用户收听一首歌非常多次这会让推荐产生偏差。在某些时候，当用户收听一首歌足够多次后就说明他们的确非常喜欢这首歌了。
+或许我们可以将`listen_count`转换成打分值，操作如下：
 
 ```python
 s = usage_data['listen_count'].sketch_summary()
