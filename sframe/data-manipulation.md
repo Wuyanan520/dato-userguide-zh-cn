@@ -54,7 +54,6 @@ songs['love_count'] = songs[['title', 'artist_name']].apply(
 songs.topk('love_count', k=5)
 ```
 
-
 ```
 +--------------------+--------------------------------+
 |      song_id       |             title              |
@@ -401,19 +400,15 @@ You can use print_rows(num_rows=m, num_columns=n) to print more rows and columns
 ```
 
 
-#### Working with Complex Types
+#### 处理复杂数据类型
 
-SArrays are strongly-typed and some operations only work on certain types. Two
-types deserve some special consideration in this user guide: `list` and `dict`.
-These types can hold values of any type supported by SArrays, including
-themselves. So you can have an SFrame with a column of dictionaries that each
-have values that are lists of lists of dicts with mixed strings and
-integers... anyway, you get the idea!
+SArray是强类型的，某些操作只能在特定数据类型上起效。在本指南中有两种数据类型值得特别关注：`list`和`dict`。
+这两种数据类型的值可以是任何SArray支持的数据类型，包括它们自己本身。所以，你可以创建一个某列值为
+字典类型，并且这个字典的值可以是字典的列表的列表及字符串和整数...
 
-The dataset we're working with right now does not have any of these types, so we
-can show how to convert one or several columns to one of these iterable types.
-For instance, suppose we want a list of all albums with a list of each song that
-was on the album.  We would obtain this list from our metadata like this:
+我们使用的数据集目前还不包含任何这种类型的数据，所以我们可以展示如何将一列或多列转换成
+这些可迭代类型。比如，假设我们需要一个专辑清单，其中包含每个专辑中所有歌曲的列表，
+我们可以像这样来实现：
 
 ```python
 albums = songs.groupby(['release','artist_name'], {'tracks': gl.aggregate.CONCAT('title'),
@@ -458,19 +453,13 @@ Note: Only the head of the SFrame is printed.
 You can use print_rows(num_rows=m, num_columns=n) to print more rows and columns.
 ```
 
-
-
-The [CONCAT](https://dato.com/products/create/docs/graphlab.data_structures.html#module-graphlab.aggregate)
-aggregator simply creates a list of all values in the given column for each
-group.  I included the year for debugging purposes, since I didn't know if the
-invariant of "every song on the same release has the same year" was true in
-this dataset.  Even looking at the first row, this is clearly not true:
+[CONCAT](https://dato.com/products/create/docs/graphlab.data_structures.html#module-graphlab.aggregate)聚合器
+将每个分组上指定列的所有值连接成一个列表。增加年份列用于调试目的，因为不知道数据集中同一发行专辑中的每一首歌是不是同一年的，
+仅仅通过第一行数据我们就知道不是的：
 
 ```python
 albums[0]
 ```
-
-
 
 ```
 {'artist_name': 'Veruca Salt',
@@ -492,11 +481,8 @@ albums[0]
   'years': array('d', [1997.0, 1997.0, 1997.0, 1997.0, 1997.0, 1997.0, 1994.0, 1997.0, 1997.0, 1997.0, 1997.0, 1997.0, 1997.0, 1997.0])}
 ```
 
-
-
-In light of this complication, and for demonstration purposes, let's have our
-'tracks' column contain dictionaries instead, where the key is the year and the
-value is a list of tracks.
+鉴于上面这样的复杂性（同一专辑中的每首歌发行年份会有不同），也为了演示的目的，
+我们将'tracks'列使用字典类型，其中键位年份，值为音乐列表。
 
 ```python
 albums = songs.groupby(['release','artist_name','year'], {'tracks':gl.aggregate.CONCAT('title')})
@@ -541,36 +527,32 @@ Note: Only the head of the SFrame is printed.
 You can use print_rows(num_rows=m, num_columns=n) to print more rows and columns.
 ```
 
+`unstack`方法实质上是一个在其他所有列上调用带`CONCAT`聚合器`groupby`方法的方便函数。
+这一操作可以通过`stack`方法还原，详细信息这里不在赘述。
+（注：[graphlab.SFrame.unstack](https://dato.com/products/create/docs/generated/graphlab.SFrame.unstack.html)
+函数原型为`SFrame.unstack(column, new_column_name=None)`，按照column指定的列之外的其他所有列聚合，
+并将column列指定的列连接成一列，column参数为str型时（即指定一个列名），如果column指定的列为数值型，
+连接成的新列为数组，如果column为非数值型，连接成的新列为列表；column参数为list类型（即指定两个列名）时，
+连接成的新列为字典，键位column参数指定的第一个列的值，值为第二个列的值。）
 
-
-The `unstack` function is essentially a convenience function for calling
-`groupby` on all other columns with the `CONCAT` aggregator.  This operation
-can be undone with `stack`, which I won't take time to show in detail.
-
-With our data organized this way, we can get some statistics on how many albums
-have this oddity and see that it's actually somewhat prevalent for this to
-occur:
+这样组织我们的数据以后，我们就可以获取一些关于有多少专辑里面的歌曲年份不同的统计信息，可以看出专辑的这种情况相当流行：
 
 ```python
 albums['num_years'] = albums['track_dict'].item_length()
 albums['num_years'].show()
 ```
 
-
-
 [<img alt="Categorical View of Number of Years per Album" src="images/sframe_user_guide_3_categorical.png" style="max-width: 70%; margin-left: 15%;" />](images/sframe_user_guide_3_categorical.png)
 
-
-
-We can still recover the full track listing with some dict operations, so
-suppose we want both a `list` and a `dict` representation of the tracks.
+我们也可以通过一些字典操作恢复track列表，假如我们需要同时用`list`和`dict`形式表示track。
 
 ```python
 albums['track_list'] = albums['track_dict'].dict_values()
 albums
 ```
 
-
+（注：albums['track_dict']是SArray类型，dict_values()是SArray对象的方法，
+可以参考[SArray](https://dato.com/products/create/docs/generated/graphlab.SArray.html)）
 
 ```
 +--------------------------------+--------------------------------+
@@ -607,10 +589,7 @@ Note: Only the head of the SFrame is printed.
 You can use print_rows(num_rows=m, num_columns=n) to print more rows and columns.
 ```
 
-
-
-We have almost recovered our old column, but we have a list of lists instead of
-just a single list.  Fixing that is a simple `apply` away:
+上面我们仅仅恢复了旧的列，但是我们仅仅获得的一个列表的列表而不是一个列表，可以通过`apply`方法解决这个问题：
 
 ```python
 import itertools
@@ -655,19 +634,15 @@ Note: Only the head of the SFrame is printed.
 You can use print_rows(num_rows=m, num_columns=n) to print more rows and columns.
 ```
 
-
-
-We can also filter elements from within a list or dictionary.  Here is how to
-remove all songs made in 1994 or 1999:
+现在我们也可以从列表或字典中过滤元素了。下面移除1994年和1999年的所有歌曲：
 
 ```python
 albums['track_dict'] = albums['track_dict'].dict_trim_by_keys([1994, 1999])
-
-
 albums
 ```
 
-
+（注：参见[graphlab.SArray.dict_trim_by_keys](https://dato.com/products/create/docs/generated/graphlab.SArray.dict_trim_by_keys.html)
+函数原型`SArray.dict_trim_by_keys(keys, exclude=True)`）
 
 ```
 +--------------------------------+--------------------------------+
@@ -704,17 +679,11 @@ Note: Only the head of the SFrame is printed.
 You can use print_rows(num_rows=m, num_columns=n) to print more rows and columns.
 ```
 
-
-
-Since dictionaries are good for item lookups, we can filter by elements we
-find in dictionaries.  Here is a query that filters  albums by whether any of
-their songs came out in 1965:
+因为字典类型方便用于元素查找，我们可以用字典中的元素进行过滤。下面查询专辑中是否有歌曲是1965年出现的：
 
 ```python
 albums[albums['track_dict'].dict_has_any_keys(1965)]
 ```
-
-
 
 ```
 +----------------------------+--------------------------------+
@@ -750,11 +719,8 @@ Note: Only the head of the SFrame is printed. This SFrame is lazily evaluated.
 You can use len(sf) to force materialization.
 ```
 
-
-
-Converting to a `list` or `dict` doesn't need to group by the rest of the values in
-the row.  If for some reason you want to turn this into a table with one column
-and all values packed into a list, you can!
+要转换成`list`或`dict`类型并不一定需要对其他值执行聚合操作。比如由于某种原因我们想将数据集
+转换成一个只有一列的表，该列原来所有数据打包成一个列表：
 
 ```python
 big_list = albums.pack_columns(albums.column_names())
@@ -782,9 +748,7 @@ Note: Only the head of the SFrame is printed.
 You can use print_rows(num_rows=m, num_columns=n) to print more rows and columns.
 ```
 
-The `unpack` function accomplishes the reverse task.  These examples may be a
-bit contrived, but these functions are very useful when working with
-unstructured data like text, as you will be able to see in the [Text Analysis](../text/analysis.md)
-chapter of this guide.
+`upack`方法实现了相反的功能。这些例子虽然有些不自然，但是在你处理如文本之类的非结构化数据的时候会非常有用，
+在[文本分析](../text/analysis.md)一章你将会看到。
 
-To find out more, check out the [API Reference for SFrames](https://dato.com/products/create/docs/generated/graphlab.SFrame.html) and the [hands-on exercises](exercises.md) at the end of the chapter.
+要了解更多SFrame内容，请查看[API Reference for SFrames](https://dato.com/products/create/docs/generated/graphlab.SFrame.html)和本章最后的[hands-on exercises](exercises.md)。
