@@ -1,7 +1,7 @@
-#Churn Prediction
-The Churn Prediction toolkit allows predicting which users will churn (stop using) a product or website given user activity logs.
+#Churn Prediction流失预测
+The Churn Prediction toolkit allows predicting which users will churn (stop using) a product or website given user activity logs.该工具包可以通过给定的用户活动日志来预测用户是否会流失
 
-Given data in the form: user id, time stamp, and user events, the churn prediction model will learn historical user behavior patterns that predict whether they are likely to stop using the website/product. Given the same, or a different set of user logs, the toolkit will compute the probability of a user churning.
+Given data in the form: user id, time stamp, and user events, the churn prediction model will learn historical user behavior patterns that predict whether they are likely to stop using the website/product. Given the same, or a different set of user logs, the toolkit will compute the probability of a user churning.给定数据的格式：用户ID，时间戳及用户行为，以及基于用户历史行为的流失预测。
 
 ##### Background
 
