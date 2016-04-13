@@ -1,12 +1,17 @@
 # Frequent Pattern Mining
+频繁模式挖掘
 
 A frequent pattern is a substructure that appears frequently in a dataset.
 Finding the frequent patterns of a dataset is a essential step in data mining
 tasks such as feature extraction and association rule learning. The frequent
 pattern mining toolkit provides tools for extracting and analyzing frequent
 patterns in pattern data.
+频繁模式是一个数据集中经常出现的子结构，寻找数据集中的频繁模式是数据挖掘任务
+（如特征提取和关联规则学习）中非常重要的一步。频繁模型挖掘工具提供抽取并分析
+数据中频繁模式的工具包
 
 ##### Introductory Example
+样例
 
 Let us look a simple example of receipt data from a bakery. The dataset
 consists of items like *ApplePie* and *GanacheCookie*. The task is to identify
@@ -14,6 +19,8 @@ sets of items that are frequently bought together. The dataset consists of
 *266209 rows* and *6 columns* which look like the following. The dataset was
 constructed by modifying the [Extended BAKERY
 dataset.](https://wiki.csc.calpoly.edu/datasets/wiki/ExtendedBakery).
+以面包店数据为例，该数据集中包含"苹果派"、"夹心饼干"等商品。任务是识别出经常被一起购买的商品集。
+该数据如下所示有266209行，6列
 
 ```no-highlight
 Data:
@@ -38,17 +45,24 @@ In order to run a frequent pattern mining algorithm, we require an **item
 columns**, (the column *Item* in this example), and a set of **feature
 columns** that uniquely identify a transaction (the column *Receipt* in this
 example).
+为了运行频繁模式挖掘算法，我们需要一个商品列和一写特征列
 
 In just a few lines of code we can do the following:
+用几行代码完成以下任务：
 
 * Find the most frequently occurring patters satisfying various conditions.
+找到最频繁出现的对
 * Extract features from the dataset by transforming it from the *Item* space
 into the *Reciept* space. These features can then be used for applications like
 clustering, classification, churn prediction, recommender systems etc. 
+通过将商品空间转为收据空间，从数据集中抽取特征。
+这些特征可用于聚类、分类、流失预测、推荐系统等等。
 * Make predictions based on new data using rules learned from sets of items that
 occur frequently together.
+使用关联规则对新数据进行预测
 
 Here is a simple end-to-end example:
+下面是一个简单的点对点的例子：
 
 ```python
 import graphlab as gl
@@ -77,11 +91,13 @@ predictions = model.predict(test)
 ```
 
 
-###### Interpreting Results
+###### Interpreting Results解释结果
 
 Frequent pattern mining can provide valuable insight about the sets of items
 that occur frequently together. When a model is trained, the `model.summary()` output
 shows the most frequently occurring patterns together. 
+频繁模式挖掘可以有效识别经常一起出现的商品对。
+训练好模型后，model.summary()输出最可能一起出现的商品对。
 
 ```python
 patterns = model.get_frequent_patterns()
@@ -110,6 +126,7 @@ together and the **support** column contains the number of times these patterns
 occur together in the entire dataset. In this example, the pattern
 *[CoffeeEclair, HotCoffee, ApplePie, AlmondTwist]* occurred *860* times in the
 training data.
+注意：模型列包含经常一起出现的模式，支持列指该模型出现的次数
 
 A **frequent pattern** is a set of items with a support greater than
 user-specified **minimum support** threshold.  However, there is significant
@@ -118,8 +135,9 @@ also frequent (e.g. *CoffeeEclair* must be frequent if *CoffeeEclair*,
 *HotCoffee* is frequent). The frequent pattern mining toolkit avoids this 
 redundancy by mining the **closed frequent patterns**: frequent patterns with 
 no superset of the same support. 
+频繁模型是一个大于给定阈值的商品集，经常会有冗余出现。该工具包避免了冗余。
 
-###### Minimum support 
+###### Minimum support 相当于阈值
 One can change the minimum support above which patterns are considered frequent using the
 **min_support** setting:
  
@@ -161,6 +179,8 @@ all patterns above a minimum support threshold, we mine the most frequent
 patterns until the maximum number of closed patterns are round.  For large data
 sets, this mining process can be time-consuming.  We recommend specifying a
 large initial minimum support bound to speed up the mining.
+在实践中，我们很少用*min_support*。
+对于大规模数据，挖掘过程耗时，建议给一个较大的*min_support*界加速挖掘。
 
 ```python
 model = gl.frequent_pattern_mining.create(train, 'Item', 
@@ -188,7 +208,7 @@ Most frequent patterns
 **Note**: The algorithm for extracting the top-k most frequent occurring
 patterns can be severely sped up with a good estimate for the lower bound on
 *min_support*.
- 
+提取前几也可以加速挖掘 
 
 ###### Minimum Length 
 
